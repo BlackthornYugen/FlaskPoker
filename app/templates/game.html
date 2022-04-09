@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            th, td, table {
+                border: 1px solid black;
+            }
+            div {
+                padding-top: 1em;
+            }
+
+            td {
+                width: 10em;
+                text-align: right;
+            }
+
+            td:nth-child(2) {
+                text-align: center;
+            }
+
+            tr.me td:nth-child(2) {
+                color: gray;
+                background: aliceblue;
+            }
+
+            button.me {
+                color: white;
+                background-color: red;
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+{#        <script type="text/javascript" charset="utf-8">#}
+{#            var socket = io();#}
+{#            socket.on('connect', function() {#}
+{#                socket.emit('vote', {data: 'I\'m connected!'});#}
+{#            });#}
+{#        </script>#}
+        <title>{{ title }}</title>
+    </head>
+    <body>
+        <h1>{{ title }}</h1>
+        <h2>{{ description }}</h2>
+        <table>
+            <tbody>
+                <tr><th>name</th><th>vote</th></tr>
+                <tr>
+                <td>
+                    <input id="name" type="text"/>
+                </td>
+                    <td>
+                        <div id="vote">
+                            <button>1</button>
+                            <button>3</button>
+                            <button>5</button>
+                            <button>7</button>
+                        </div>
+                    </td>
+                </tr>
+                {% for player in players %}
+                {% if player.vote != None %}
+                    <tr id="{{ player.id }}">
+                        <td>{{ player.name }}</td>
+                        <td>{% if player.vote != None %}{{ player.vote | default("?", true) }}{% endif %}</td></tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <button id="flipButton">Flip</button>
+    </body>
+        <script type="text/javascript" charset="utf-8">
+            function createPlayer(id) {
+                // check if player already exists
+                let playerRow = document.getElementById(id);
+
+                if (playerRow) {
+                    return playerRow;
+                }
+
+                playerRow = document.createElement("tr");
+                playerRow.id = id
+                let nameData = document.createElement("td")
+                let voteData = document.createElement("td")
+                playerRow.appendChild(nameData);
+                playerRow.appendChild(voteData);
+                document.getElementsByTagName("tbody")[0].appendChild(playerRow);
+                return playerRow;
+            }
+
+            window.onload = () => {
+                const socket = io();
+                socket.io.opts.transports = ["websocket"];
+                let nameEvent = null;
+
+                socket.on("vote", votes => {
+                    votes.forEach(vote => {
+                        let row = createPlayer(vote['user']);
+                        row.getElementsByTagName("td")[1].innerText = vote['value']
+                    })
+                    console.log(votes)
+                });
+
+                socket.on("name", message => {
+                    let row = createPlayer(message['id']);
+
+                    row.getElementsByTagName("td")[0].innerText = message['name']
+                    {#row.getElementsByTagName("td")[1].innerText = "?"#}
+
+                    console.log(message)
+                });
+
+                const voteButtons = document.getElementById("vote").getElementsByTagName("button")
+                for (let button of voteButtons) {
+                    button.onclick = click => {
+                        socket.emit('vote', {data: click.target.innerHTML});
+                        console.log(click.target.innerHTML)
+                        click.target
+                        for ( let button of voteButtons ) {
+                            button.classList.remove("me");
+                            click.target.classList.add("me");
+                        }
+                    }
+                }
+
+                document.getElementById("flipButton").onclick = () => {
+                    socket.emit('flip', {});
+                }
+
+                function changeName(event) {
+                    // change in 1 second
+                    clearTimeout(nameEvent);
+                    nameEvent = setTimeout((value) => {
+                        socket.emit('name', { data: value });
+                    }, 300, event.target.value)
+
+                }
+
+                document.getElementById("name").onchange = changeName;
+                document.getElementById("name").onkeyup = changeName;
+            }
+
+        </script>
+</html>
