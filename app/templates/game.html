@@ -5,12 +5,23 @@
             th, td, table {
                 border: 1px solid black;
             }
-            div {
-                padding-top: 1em;
+
+            th {
+                background: dimgray;
+                font-size: xx-large;
+                color: wheat;
             }
 
             td {
                 width: 10em;
+                text-align: right;
+                padding: 1em;
+                font-size: xx-large;
+            }
+
+            input#name {
+                width: 100%;
+                font-size: xx-large;
                 text-align: right;
             }
 
@@ -23,18 +34,18 @@
                 background: aliceblue;
             }
 
+            button {
+                padding: 1em;
+                margin: 1em;
+                font-size: large;
+            }
+
             button.me {
                 color: white;
                 background-color: red;
             }
         </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-{#        <script type="text/javascript" charset="utf-8">#}
-{#            var socket = io();#}
-{#            socket.on('connect', function() {#}
-{#                socket.emit('vote', {data: 'I\'m connected!'});#}
-{#            });#}
-{#        </script>#}
         <title>{{ title }}</title>
     </head>
     <body>
@@ -137,6 +148,5 @@
                 document.getElementById("name").onchange = changeName;
                 document.getElementById("name").onkeyup = changeName;
             }
-
         </script>
 </html>
