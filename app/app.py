@@ -83,7 +83,7 @@ def handle_vote(data):
         user.vote = data['data']
         session["user_vote"] = user.vote
 
-    emit('vote', [{"user": user.id, "value": user.vote}], room=user.room)
+    emit('vote', [{"user": user.id, "value": "?" if user.vote is not None else ""}], room=user.room)
     db.session.commit()
     print(session)
 
