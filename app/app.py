@@ -37,8 +37,10 @@ def random_room():
 
 @app.route('/<room_id>')
 def list_members(room_id="default"):  # put application's code here
-    session['user_room'] = room_id
     user = load_user()
+    session['user_room'] = room_id
+    user.room = room_id
+    db.session.commit()
     return render_template(
         'game.html',
         room=room_id,
@@ -46,13 +48,15 @@ def list_members(room_id="default"):  # put application's code here
         votes=["☕️", 1, 2, 3, 5, 8, 13, 21, "?"],
         user=user,
         description="Smarter page templates with Flask & Jinja.",
-        players=User.query.filter(User.room == room_id).all()
+        players=User.query.filter(User.name.isnot(None)).filter(User.room == room_id).all()
     )
 
 
 @socketio.on('connect')
 def connect():
-    join_room(load_user().room)
+    user = load_user()
+    join_room(user.room)
+    socketio.emit('name', {"name": user.name, "id": user.id}, room=user.room)
 
 
 def load_user():
@@ -95,11 +99,15 @@ def handle_vote(data):
 
 @socketio.on('name')
 def handle_name(data):
+    if 'data' not in data or len(data['data']) == 0:
+        print("bad name")
+        return
+
+    session['user_name'] = data['data']
     user = load_user()
     user.name = data['data']
-    session['user_name'] = user.name
     db.session.commit()
-    emit('name', {"name": data['data'], "id": user.id}, room=user.room)
+    emit('name', {"name": user.name, "id": user.id}, room=user.room)
     print(session)
 
 
@@ -109,7 +117,7 @@ def flip(ignored):
     votes = []
     for user in voting_users:
         votes.append({"user": user.id, "value": user.vote})
-    emit('vote', votes, room=user.room)
+    emit('vote', votes, room=load_user().room)
 
 
 db.create_all()
