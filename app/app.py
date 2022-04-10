@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get("FLASK_COOKIE_SECRET")
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'sqlalchemy'
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
+app.config['PERMANENT_SESSION_LIFETIME'] = 60 * 60 * 24  # 24 hours
 db = SQLAlchemy(app)
 
 

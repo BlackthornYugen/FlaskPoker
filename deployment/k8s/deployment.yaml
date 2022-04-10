@@ -26,6 +26,9 @@ spec:
       - image: ghcr.io/blackthornyugen/flaskpoker:main
         imagePullPolicy: Always
         name: flaskpoker
+        env:
+        - name: FLASK_COOKIE_SECRET
+          value: "changeit"
       imagePullSecrets:
       - name: ghrcred
       dnsPolicy: ClusterFirst
