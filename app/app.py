@@ -48,7 +48,7 @@ def list_members(room_id="default"):  # put application's code here
         votes=["☕️", 1, 2, 3, 5, 8, 13, 21, "?"],
         user=user,
         description="Smarter page templates with Flask & Jinja.",
-        players=User.query.filter(User.name.isnot(None)).filter(User.room == room_id).all()
+        players=get_users_in_room(room_id)
     )
 
 
@@ -113,15 +113,20 @@ def handle_name(data):
 
 @socketio.on('flip')
 def flip(ignored):
-    voting_users = User.query.filter(User.vote.isnot(None))
+    room_id = load_user().room
     votes = []
-    for user in voting_users:
+    for user in get_users_in_room(room_id):
         votes.append({"user": user.id, "value": user.vote})
-    emit('vote', votes, room=load_user().room)
+    emit('vote', votes, room=room_id)
 
 
 db.create_all()
 db.session.commit()
+
+
+def get_users_in_room(room_id):
+    return User.query.filter(User.name.isnot(None)).filter(User.room == room_id)
+
 
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0")
