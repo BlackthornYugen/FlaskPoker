@@ -75,14 +75,15 @@ def connect():
 def handle_vote(data):
     user = load_user()
     print(user.room)
+
     if str(session["user_vote"]) == str(data['data']):
         user.vote = None
         session["user_vote"] = None
-        emit('vote', [{"user": user.id, "value": None}], room=user.room)
     else:
         user.vote = data['data']
         session["user_vote"] = user.vote
-        emit('vote', [{"user": user.id, "value": "?"}], room=user.room)
+
+    emit('vote', [{"user": user.id, "value": user.vote}], room=user.room)
     db.session.commit()
     print(session)
 
