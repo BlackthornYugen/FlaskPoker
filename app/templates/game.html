@@ -56,23 +56,21 @@
                 <tr><th>name</th><th>vote</th></tr>
                 <tr>
                 <td>
-                    <input id="name" type="text"/>
+                    <input id="name" type="text" value="{{ user.name }}"/>
                 </td>
                     <td>
                         <div id="vote">
-                            <button>1</button>
-                            <button>3</button>
-                            <button>5</button>
-                            <button>7</button>
+                            <button {% if 1 == user.vote %}class="me"{% endif %}>1</button>
+                            <button {% if 3 == user.vote %}class="me"{% endif %}>3</button>
+                            <button {% if 5 == user.vote %}class="me"{% endif %}>5</button>
+                            <button {% if 7 == user.vote %}class="me"{% endif %}>7</button>
                         </div>
                     </td>
                 </tr>
                 {% for player in players %}
-                {% if player.vote != None %}
                     <tr id="{{ player.id }}">
                         <td>{{ player.name }}</td>
-                        <td>{% if player.vote != None %}{{ player.vote | default("?", true) }}{% endif %}</td></tr>
-                {% endif %}
+                        <td>{% if player.vote != None %}?{% endif %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

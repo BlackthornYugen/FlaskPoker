@@ -6,10 +6,13 @@ from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+socketio.manage_session = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "random string"
-
+app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 db = SQLAlchemy(app)
 
 
@@ -25,9 +28,11 @@ class User(db.Model):
 
 @app.route('/')
 def list_members():  # put application's code here
+    user = load_user()
     return render_template(
         'game.html',
         title="Flask Poker",
+        user=user,
         description="Smarter page templates with Flask & Jinja.",
         players=User.query.all(),
         is_revealed=False
@@ -35,34 +40,56 @@ def list_members():  # put application's code here
 
 
 @socketio.on('connect')
-def register():
-    user = User("Unknown User", None)
-    session['user'] = user
-    db.session.add(user)
-    db.session.commit()
+def connect():
+    print(session)
+
+    # print(request.cookies)
+    load_user()
+
+
+def load_user():
+    user = None
+
+    if 'user_id' in session and session['user_id'] is not None:
+        user = User.query.get(session['user_id'])
+
+    if user is None:
+        user = User(session['user_name'] if 'user_name' in session else "Unknown User",
+                    session['user_vote'] if 'user_vote' in session else None)
+        db.session.add(user)
+        db.session.commit()
+        socketio.emit('name', {"name": user.name, "id": user.id}, broadcast=True)
+        print(user.id)
+
+    session['user_id'] = user.id
+    session['user_name'] = user.name
+    session['user_vote'] = user.vote
+    return user
 
 
 @socketio.on('vote')
 def handle_vote(data):
-    user = session['user']
-    session['user'].vote = data['data']
-    db.session.add(user)
+    user = load_user()
+    if str(session["user_vote"]) == str(data['data']):
+        user.vote = None
+        session["user_vote"] = None
+        emit('vote', [{"user": user.id, "value": None}], broadcast=True)
+    else:
+        user.vote = data['data']
+        session["user_vote"] = user.vote
+        emit('vote', [{"user": user.id, "value": "?"}], broadcast=True)
     db.session.commit()
-
-    if user.id is None:
-        print("missing uid")
-        return
-
-    emit('vote', [{"user": user.id, "value":  "?"}], broadcast=True)
+    print(session)
 
 
 @socketio.on('name')
 def handle_name(data):
-    user = session['user']
+    user = load_user()
     user.name = data['data']
-    db.session.add(user)
+    session['user_name'] = user.name
     db.session.commit()
     emit('name', {"name": data['data'], "id": user.id}, broadcast=True)
+    print(session)
 
 
 @socketio.on('flip')
