@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - image: ghcr.io/blackthornyugen/flaskpoker:main
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: flaskpoker
       imagePullSecrets:
       - name: ghrcred
