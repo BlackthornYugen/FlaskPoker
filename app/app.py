@@ -16,6 +16,11 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 db = SQLAlchemy(app)
 
 
+# # # # # #
+# Models  #
+# # # # # #
+
+
 class User(db.Model):
     id = db.Column('user_id', db.Integer, primary_key=True)
     name = db.Column(db.String(100))
@@ -26,6 +31,11 @@ class User(db.Model):
         self.name = name
         self.room = room
         self.vote = vote
+
+
+# # # # # # # # #
+# API Endpoints #
+# # # # # # # # #
 
 
 @app.route('/')
@@ -57,28 +67,6 @@ def connect():
     user = load_user()
     join_room(user.room)
     socketio.emit('name', {"name": user.name, "id": user.id}, room=user.room)
-
-
-def load_user():
-    user = None
-
-    if 'user_id' in session and session['user_id'] is not None:
-        user = User.query.get(session['user_id'])
-
-    if user is None:
-        user = User(session['user_name'] if 'user_name' in session else None,
-                    session['user_room'] if 'user_room' in session else None,
-                    session['user_vote'] if 'user_vote' in session else None)
-        db.session.add(user)
-        db.session.commit()
-        socketio.emit('name', {"name": user.name, "id": user.id}, room=user.room)
-        print(user.id)
-
-    session['user_id'] = user.id
-    session['user_name'] = user.name
-    session['user_vote'] = user.vote
-    session['user_room'] = user.room
-    return user
 
 
 @socketio.on('vote')
@@ -120,13 +108,44 @@ def flip(ignored):
     emit('vote', votes, room=room_id)
 
 
-db.create_all()
-db.session.commit()
+# # # # # # # # # # #
+# Helper functions  #
+# # # # # # # # # # #
 
 
 def get_users_in_room(room_id):
     return User.query.filter(User.name.isnot(None)).filter(User.room == room_id)
 
+
+def load_user():
+    user = None
+
+    if 'user_id' in session and session['user_id'] is not None:
+        user = User.query.get(session['user_id'])
+
+    if user is None:
+        user = User(session['user_name'] if 'user_name' in session else None,
+                    session['user_room'] if 'user_room' in session else None,
+                    session['user_vote'] if 'user_vote' in session else None)
+        db.session.add(user)
+        db.session.commit()
+        socketio.emit('name', {"name": user.name, "id": user.id}, room=user.room)
+        print(user.id)
+
+    session['user_id'] = user.id
+    session['user_name'] = user.name
+    session['user_vote'] = user.vote
+    session['user_room'] = user.room
+    return user
+
+
+# # # # # # # #
+# Entrypoint  #
+# # # # # # # #
+
+
+db.create_all()
+db.session.commit()
 
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0")
