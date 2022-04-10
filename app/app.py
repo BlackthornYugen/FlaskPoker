@@ -1,8 +1,9 @@
 import os
+import names
 
-from flask import Flask, render_template, session, request, redirect
+from flask import Flask, render_template, session, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask_socketio import SocketIO, emit, join_room, disconnect
+from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -27,7 +28,7 @@ class User(db.Model):
     vote = db.Column(db.Integer)
     room = db.Column(db.String(100))
 
-    def __init__(self, name: str = "Unknown user", room: str = "default", vote: int = None):
+    def __init__(self, name: str, room: str, vote: int):
         self.name = name
         self.room = room
         self.vote = vote
@@ -44,6 +45,7 @@ def random_room():
     uid_str = uuid.uuid4().urn
     room = uid_str[9:]
     return redirect("/" + str(room), code=302)
+
 
 @app.route('/<room_id>')
 def list_members(room_id="default"):  # put application's code here
@@ -124,7 +126,7 @@ def load_user():
         user = User.query.get(session['user_id'])
 
     if user is None:
-        user = User(session['user_name'] if 'user_name' in session else None,
+        user = User(session['user_name'] if 'user_name' in session else names.get_full_name(),
                     session['user_room'] if 'user_room' in session else None,
                     session['user_vote'] if 'user_vote' in session else None)
         db.session.add(user)
