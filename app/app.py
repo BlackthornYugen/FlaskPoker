@@ -32,10 +32,10 @@ def list_members():  # put application's code here
     return render_template(
         'game.html',
         title="Flask Poker",
+        votes=["☕️", 1, 2, 3, 5, 8, 13, 21, "?"],
         user=user,
         description="Smarter page templates with Flask & Jinja.",
-        players=User.query.all(),
-        is_revealed=False
+        players=User.query.all()
     )
 
 

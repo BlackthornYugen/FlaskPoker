@@ -60,10 +60,9 @@
                 </td>
                     <td>
                         <div id="vote">
-                            <button {% if 1 == user.vote %}class="me"{% endif %}>1</button>
-                            <button {% if 3 == user.vote %}class="me"{% endif %}>3</button>
-                            <button {% if 5 == user.vote %}class="me"{% endif %}>5</button>
-                            <button {% if 7 == user.vote %}class="me"{% endif %}>7</button>
+                            {% for i in votes %} {#  Fn-1 + Fn-2 #}
+                            <button {% if i == user.vote %}class="me"{% endif %}>{{ i }}</button>
+                            {% endfor %}
                         </div>
                     </td>
                 </tr>
