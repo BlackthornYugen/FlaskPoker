@@ -1,15 +1,15 @@
-import typing
+import os
 
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, disconnect
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 socketio.manage_session = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = "random string"
+app.config['SECRET_KEY'] = os.environ.get("FLASK_COOKIE_SECRET")
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
@@ -20,31 +20,39 @@ class User(db.Model):
     id = db.Column('user_id', db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     vote = db.Column(db.Integer)
+    room = db.Column(db.String(100))
 
-    def __init__(self, name: str, vote: typing.Optional[int]):
+    def __init__(self, name: str = "Unknown user", room: str = "default", vote: int = None):
         self.name = name
+        self.room = room
         self.vote = vote
 
 
 @app.route('/')
-def list_members():  # put application's code here
+def random_room():
+    import uuid
+    uid_str = uuid.uuid4().urn
+    room = uid_str[9:]
+    return redirect("/" + str(room), code=302)
+
+@app.route('/<room_id>')
+def list_members(room_id="default"):  # put application's code here
+    session['user_room'] = room_id
     user = load_user()
     return render_template(
         'game.html',
+        room=room_id,
         title="Flask Poker",
         votes=["☕️", 1, 2, 3, 5, 8, 13, 21, "?"],
         user=user,
         description="Smarter page templates with Flask & Jinja.",
-        players=User.query.all()
+        players=User.query.filter(User.room == room_id).all()
     )
 
 
 @socketio.on('connect')
 def connect():
-    print(session)
-
-    # print(request.cookies)
-    load_user()
+    join_room(load_user().room)
 
 
 def load_user():
@@ -54,30 +62,33 @@ def load_user():
         user = User.query.get(session['user_id'])
 
     if user is None:
-        user = User(session['user_name'] if 'user_name' in session else "Unknown User",
+        user = User(session['user_name'] if 'user_name' in session else None,
+                    session['user_room'] if 'user_room' in session else None,
                     session['user_vote'] if 'user_vote' in session else None)
         db.session.add(user)
         db.session.commit()
-        socketio.emit('name', {"name": user.name, "id": user.id}, broadcast=True)
+        socketio.emit('name', {"name": user.name, "id": user.id}, room=user.room)
         print(user.id)
 
     session['user_id'] = user.id
     session['user_name'] = user.name
     session['user_vote'] = user.vote
+    session['user_room'] = user.room
     return user
 
 
 @socketio.on('vote')
 def handle_vote(data):
     user = load_user()
+    print(user.room)
     if str(session["user_vote"]) == str(data['data']):
         user.vote = None
         session["user_vote"] = None
-        emit('vote', [{"user": user.id, "value": None}], broadcast=True)
+        emit('vote', [{"user": user.id, "value": None}], room=user.room)
     else:
         user.vote = data['data']
         session["user_vote"] = user.vote
-        emit('vote', [{"user": user.id, "value": "?"}], broadcast=True)
+        emit('vote', [{"user": user.id, "value": "?"}], room=user.room)
     db.session.commit()
     print(session)
 
@@ -88,7 +99,7 @@ def handle_name(data):
     user.name = data['data']
     session['user_name'] = user.name
     db.session.commit()
-    emit('name', {"name": data['data'], "id": user.id}, broadcast=True)
+    emit('name', {"name": data['data'], "id": user.id}, room=user.room)
     print(session)
 
 
@@ -98,7 +109,7 @@ def flip(ignored):
     votes = []
     for user in voting_users:
         votes.append({"user": user.id, "value": user.vote})
-    emit('vote', votes, broadcast=True)
+    emit('vote', votes, room=user.room)
 
 
 db.create_all()
