@@ -1,0 +1,33 @@
+th, td, table {
+    border: 1px solid black;
+}
+
+th {
+    background: dimgray;
+    font-size: xx-large;
+    color: wheat;
+}
+
+td {
+    width: 10em;
+    text-align: right;
+    padding: 1em;
+    font-size: xx-large;
+}
+
+input#name {
+    width: 100%;
+    font-size: xx-large;
+    text-align: right;
+    border: 0;
+}
+
+td:nth-child(2) {
+    text-align: center;
+}
+
+button {
+    padding: 1em;
+    margin: 1em;
+    font-size: large;
+}
