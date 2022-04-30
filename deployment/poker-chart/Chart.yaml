@@ -1,0 +1,4 @@
+name: poker-chart
+apiVersion: v2
+version: "0.0.1"
+icon: https://kwlug.org/themes/kwlug_theme/logo.svg

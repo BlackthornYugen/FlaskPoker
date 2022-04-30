@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: flaskpoker
-  name: flaskpoker
+    app: {{ .Release.Name }}
+  name: {{ .Release.Name }}
 spec:
   ports:
   - name: http
@@ -11,5 +11,5 @@ spec:
     protocol: TCP
     targetPort: 5000
   selector:
-    app: flaskpoker
+    app: {{ .Release.Name }}
   type: ClusterIP

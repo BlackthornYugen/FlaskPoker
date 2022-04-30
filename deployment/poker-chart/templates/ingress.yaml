@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  name: flaskpoker
+  name: {{ .Release.Name }}
 spec:
   ingressClassName: nginx
   rules:
@@ -12,7 +12,7 @@ spec:
       paths:
       - backend:
           service:
-            name: flaskpoker
+            name: {{ .Release.Name }}
             port:
               name: http
         path: /
@@ -22,7 +22,7 @@ spec:
       paths:
       - backend:
           service:
-            name: flaskpoker
+            name: {{ .Release.Name }}
             port:
               name: http
         path: /
