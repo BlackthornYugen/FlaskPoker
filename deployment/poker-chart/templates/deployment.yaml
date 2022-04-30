@@ -27,7 +27,11 @@ spec:
         name: {{ .Release.Name }}
         env:
         - name: FLASK_COOKIE_SECRET
-          value: "{{ randAlphaNum 32 }}"
+          valueFrom:
+            secretKeyRef:
+              key: secretkey
+              name: cookie-secret
+              optional: true
       imagePullSecrets:
       - name: ghrcred
       dnsPolicy: ClusterFirst
@@ -35,3 +39,18 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+---
+# Google helm create secret if not exists
+# found https://stackoverflow.com/a/61715870/2535649
+# links to https://github.com/sankalp-r/helm-charts-examples/blob/main/sample_chart/templates/_helpers.tpl
+kind: Secret
+apiVersion: v1
+metadata:
+  name: cookie-secret
+data:
+  {{- $secret := lookup "v1" "Secret" .Release.Namespace "cookie-secret" -}}
+  {{- if $secret -}} {{/*                        Reusing existing password if secret was found... */}}
+  secretkey: {{ $secret.data.secretkey }}
+  {{- else -}} {{/*                               ... otherwise, generate a random password.      */}}
+  secretkey: {{ randAlphaNum 32 | b64enc }}
+  {{- end -}}
