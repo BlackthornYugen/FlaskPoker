@@ -10,10 +10,6 @@ spec:
     port: 5000
     protocol: TCP
     targetPort: 5000
-  - name: websockets
-    port: 5000
-    protocol: TCP
-    targetPort: 5000
   selector:
     app: flaskpoker
   type: ClusterIP
