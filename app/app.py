@@ -10,7 +10,7 @@ socketio = SocketIO(app)
 socketio.manage_session = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLALCHEMY_DATABASE_URI", default='sqlite:///:memory:')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get("FLASK_COOKIE_SECRET")
+app.config['SECRET_KEY'] = os.environ.get("FLASK_COOKIE_SECRET", default="this-default-will-let-anyone-forge-a-cookie")
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['PERMANENT_SESSION_LIFETIME'] = 60 * 60 * 24  # 24 hours
