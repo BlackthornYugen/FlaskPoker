@@ -17,6 +17,14 @@ spec:
               name: http
         path: /
         pathType: Prefix
+
+      - path: /favicon.ico
+        pathType: Prefix
+        backend:
+          service:
+            name: "echoserver"
+            port:
+              number: 8080
   - host: poker.jskw.dev
     http:
       paths:
