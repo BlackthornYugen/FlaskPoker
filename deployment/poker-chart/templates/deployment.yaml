@@ -32,6 +32,13 @@ spec:
               key: secretkey
               name: cookie-secret
               optional: true
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: {{ .Release.Name }}-db
+        - name: SQLALCHEMY_DATABASE_URI
+          value: "postgresql://postgres:$(PGPASSWORD)@{{ .Release.Name }}-db.{{ .Release.Namespace }}.svc.cluster.local/postgres"
       imagePullSecrets:
       - name: ghrcred
       dnsPolicy: ClusterFirst

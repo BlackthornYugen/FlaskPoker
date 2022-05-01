@@ -1,0 +1,4 @@
+db:
+  primary:
+    persistence:
+      enabled: false
