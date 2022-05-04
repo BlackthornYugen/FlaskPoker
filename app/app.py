@@ -47,6 +47,11 @@ def random_room():
     return redirect("/" + str(room), code=302)
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return "Not Found", 404
+
+
 @app.route('/<room_id>')
 def list_members(room_id="default"):  # put application's code here
     user = load_user()

@@ -1,14 +1,15 @@
-# Create Docker Secret
-If your token is in your clipboard, and you have pbpaste:
-
-```shell
-kubectl create secret docker-registry ghrcred \
-  --docker-server=ghcr.io \
-  --docker-username=BlackthornYugen \
-  --docker-password=$(pbpaste) \
-  --docker-email=email@email.email
-```
-
 # Deploy to cluster
 
-kubectl apply -f deployment/k8s
+## Fetch dependencies
+To download helm dependencies, run the following command:
+
+```shell
+helm dependency build deployment/poker-chart
+```
+
+## Deploy
+For an upgrade (or install):
+
+```shell
+helm upgrade --install --render-subchart-notes poker deployment/poker-chart
+```

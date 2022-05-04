@@ -3,30 +3,21 @@ kind: Ingress
 metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  name: flaskpoker
+  name: {{ .Release.Name }}
 spec:
   ingressClassName: nginx
-  rules:
-  - host: poker.arrakis.jskw.dev
+  rules:{{- range .Values.domains }}
+  - host: {{ $.Values.subdomain }}.{{ . }}
     http:
       paths:
       - backend:
           service:
-            name: flaskpoker
+            name: {{ $.Release.Name }}
             port:
               name: http
         path: /
         pathType: Prefix
-  - host: poker.jskw.dev
-    http:
-      paths:
-      - backend:
-          service:
-            name: flaskpoker
-            port:
-              name: http
-        path: /
-        pathType: Prefix
+{{- end }}
   tls:
   - hosts:
     - arrakis.jskw.dev

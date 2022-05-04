@@ -1,0 +1,2 @@
+# You can get the cookie secret with
+kubectl get secret --namespace {{ .Release.Namespace }} cookie-secret --output template="{{"{{"}}.data.secretkey | base64decode {{"}}"}}"

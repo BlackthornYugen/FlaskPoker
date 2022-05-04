@@ -1,0 +1,10 @@
+db:
+  primary:
+    persistence:
+      enabled: false
+subdomain: poker
+domains:
+  - arrakis.jskw.dev
+  - arrakis.jskw.ca
+  - jskw.dev
+  - jskw.ca
