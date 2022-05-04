@@ -4,5 +4,4 @@ flask-sqlalchemy~=2.5.1
 simple-websocket~=0.5.1
 flask-session~=0.4.0
 eventlet~=0.33.0
-names~=0.3.0
 psycopg2~=2.9.3
