@@ -1,5 +1,4 @@
 import os
-import names
 
 from flask import Flask, render_template, session, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -132,7 +131,7 @@ def load_user():
         user = User.query.get(session['user_id'])
 
     if user is None:
-        user = User(session['user_name'] if 'user_name' in session else names.get_full_name(),
+        user = User(session['user_name'] if 'user_name' in session else "👻",
                     session['user_room'] if 'user_room' in session else None,
                     session['user_vote'] if 'user_vote' in session else None)
         db.session.add(user)
